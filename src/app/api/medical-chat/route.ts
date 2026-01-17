@@ -19,6 +19,7 @@ Your task is to provide step-by-step medical reasoning (Chain of Thought) follow
 Key areas: plastic surgery, preoperative evaluations, postoperative complications, differential diagnosis.
 Use appropriate medical terminology but explain complex concepts clearly.`,
     prompt: query,
+    mode: 'tool',
   });
 
   return result.toTextStreamResponse();
