@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { 
+import {
   ArrowDown, Sparkles, Cpu, Database, Shield, Zap,
-  Brain, ChevronRight, BarChart3, Target, Clock
+  Brain, ChevronRight, BarChart3, Target, Clock,
+  Heart, Moon, Activity
 } from 'lucide-react';
 import MedicalHero from '@/components/MedicalHero';
 import ModernChat from '@/components/ModernChat/ModernChat';
@@ -18,7 +19,7 @@ function FloatingIndicator() {
   const y = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
 
   return (
-    <motion.div 
+    <motion.div
       style={{ opacity, y }}
       className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20"
     >
@@ -54,17 +55,17 @@ function DemoIntro() {
               Demo Helena AI
             </span>
           </div>
-          
+
           <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6">
             <span className="block">Asistente quirúrgico</span>
             <span className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Helena AI
             </span>
           </h2>
-          
+
           <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Esta demostración presenta <strong className="text-gray-900">Helena AI</strong>, desarrollado por{' '}
-            <span className="text-gray-500">Visionary AI</span>. Procesa casos médicos reales con 
+            <span className="text-gray-500">Visionary AI</span>. Procesa casos médicos reales con
             razonamiento estructurado, ofreciendo análisis clínico especializado en cirugía plástica.
           </p>
         </div>
@@ -85,7 +86,7 @@ function DemoIntro() {
               Dataset Médico Real
             </h3>
             <p className="text-gray-600 mb-4">
-              Integramos <code className="bg-gray-100 px-2 py-1 rounded text-sm">medical-o1-reasoning-SFT</code> con 
+              Integramos <code className="bg-gray-100 px-2 py-1 rounded text-sm">medical-o1-reasoning-SFT</code> con
               casos médicos reales adaptados a cirugía plástica.
             </p>
             <ul className="space-y-2 text-sm text-gray-500">
@@ -192,11 +193,11 @@ function DemoIntro() {
               <span>Compare tiempos de respuesta</span>
             </div>
           </div>
-          
+
           <div className="text-2xl font-light text-gray-900 mb-8">
             Desplácese hacia abajo para <span className="font-semibold">interactuar con la demo</span>
           </div>
-          
+
           <motion.div
             animate={{ y: [0, 5, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -252,6 +253,102 @@ export default function Home() {
         <TechComparison />
       </section>
 
+      {/* 4.5. Nueva Sección de Wearables */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            <div className="flex-1 space-y-6">
+              <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  NUEVO: INTEGRACIÓN WEARABLES
+                </span>
+              </div>
+
+              <h2 className="text-4xl font-light text-gray-900">
+                Monitoreo Post-Operatorio <br />
+                <span className="font-semibold text-blue-600">en Tiempo Real</span>
+              </h2>
+
+              <p className="text-lg text-gray-600">
+                Conecte dispositivos como <strong>Apple Watch</strong>, <strong>Fitbit</strong> y <strong>Oura Ring</strong> para un seguimiento continuo de la recuperación de sus pacientes.
+              </p>
+
+              <ul className="space-y-3">
+                {[
+                  'Detección temprana de complicaciones',
+                  'Seguimiento de actividad y sueño',
+                  'Alertas automáticas al cirujano'
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-gray-700">
+                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <Target className="w-3 h-3 text-green-600" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="pt-4">
+                <a
+                  href="/wearables"
+                  className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors"
+                >
+                  <span className="font-medium">Ver Integración</span>
+                  <ChevronRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="relative z-10 bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                      <Heart className="w-6 h-6 text-red-500" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Signos Vitales</div>
+                      <div className="text-xs text-green-500 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        En vivo
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900">72 <span className="text-sm text-gray-500 font-normal">bpm</span></span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 w-[75%]"></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Oura Ring</span>
+                    <span>Actualizado hace 2m</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-100 flex gap-4">
+                  <div className="flex-1 text-center p-3 bg-gray-50 rounded-xl">
+                    <Moon className="w-5 h-5 text-purple-500 mx-auto mb-2" />
+                    <div className="text-sm font-semibold">8h 12m</div>
+                    <div className="text-xs text-gray-500">Sueño</div>
+                  </div>
+                  <div className="flex-1 text-center p-3 bg-gray-50 rounded-xl">
+                    <Activity className="w-5 h-5 text-green-500 mx-auto mb-2" />
+                    <div className="text-sm font-semibold">4.2 km</div>
+                    <div className="text-xs text-gray-500">Actividad</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative elements */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-r from-blue-100/30 to-purple-100/30 blur-3xl -z-10 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 5. Llamado a la acción para cirujanos */}
       <section className="py-20 bg-white">
         <ConversionCTA />
@@ -274,11 +371,11 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-sm text-gray-500 max-w-md">
-                Asistente de IA especializado para cirujanos plásticos. 
+                Asistente de IA especializado para cirujanos plásticos.
                 Demostración técnica con dataset médico real y razonamiento estructurado.
               </p>
             </div>
-            
+
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">7+</div>
@@ -294,7 +391,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-8 pt-8 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-400">
               🧠 <strong>Helena AI Demo:</strong> Asistente quirúrgico inteligente desarrollado por{' '}
