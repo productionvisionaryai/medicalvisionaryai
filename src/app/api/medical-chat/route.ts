@@ -1,33 +1,22 @@
 import { groq } from "@ai-sdk/groq";
 import { streamText } from "ai";
 
-export const maxDuration = 30;
-
 export async function POST(req: Request) {
-  try {
-    const { messages } = await req.json();
+  console.log("HELENA: Endpoint llamado");
 
-    const allMessages = [
-      {
-        role: "system",
-        content: "Eres Helena, asistente médica. Responde en español."
-      },
-      ...messages
-    ];
+  const { messages } = await req.json();
 
-    const result = streamText({
-      model: groq("llama3-70b-8192"),
-      messages: allMessages,
-    });
+  console.log("HELENA: Mensajes recibidos:", messages);
 
-    return result.toTextStreamResponse();
+  const result = streamText({
+    model: groq("llama3-70b-8192"),
+    messages: [
+      { role: "system", content: "Eres Helena. Di 'HOLA'." },
+      ...(messages || [])
+    ],
+  });
 
-  } catch (error) {
-    return new Response(
-      JSON.stringify({
-        message: "¡Hola! Soy Helena, tu asistente médica."
-      }),
-      { status: 200 }
-    );
-  }
+  console.log("HELENA: Llamando a Groq...");
+
+  return result.toTextStreamResponse();
 }
