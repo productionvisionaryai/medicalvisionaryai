@@ -3,7 +3,14 @@ import { streamText } from "ai";
 
 export const maxDuration = 30;
 
-const systemPrompt = `Eres Helena, una asistente médica especializada.
+export async function POST(req: Request) {
+  try {
+    const { messages } = await req.json();
+
+    const allMessages = [
+      {
+        role: "system",
+        content: `Eres Helena, una asistente médica especializada.
 
 OBJETIVOS PRINCIPALES:
 1. Realizar triage médico inteligente
@@ -41,16 +48,24 @@ FORMATO DE RESPUESTA:
 • Nivel de urgencia (Baja/Media/Alta)
 
 [NOTA]
-• Recordatorio de registro médico`;
+• Recordatorio de registro médico`
+      },
+      ...messages
+    ];
 
-export async function POST(req: Request) {
-  const { messages } = await req.json();
+    const result = streamText({
+      model: groq("llama-3.3-70b-versatile"),
+      messages: allMessages,
+    });
 
-  const result = streamText({
-    model: groq("llama-3.3-70b-versatile"),
-    messages,
-    system: systemPrompt,
-  });
+    return result.toTextStreamResponse();
 
-  return result.toTextStreamResponse();
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        message: "¡Hola! Soy Helena, tu asistente médica."
+      }),
+      { status: 200 }
+    );
+  }
 }
