@@ -4,15 +4,16 @@ import { streamText } from "ai";
 export async function POST(req: Request) {
   console.log("HELENA: Endpoint llamado");
 
-  const { messages } = await req.json();
+  // FIX: Extrae el mensaje directo, no el array de messages
+  const { message } = await req.json();
 
-  console.log("HELENA: Mensajes recibidos:", messages);
+  console.log("HELENA: Mensaje recibido:", message);
 
   const result = streamText({
     model: groq("llama-3.3-70b-versatile"),
     messages: [
       { role: "system", content: "Eres Helena. Di 'HOLA'." },
-      ...(messages || [])
+      { role: "user", content: message || "Hola" }
     ],
   });
 
