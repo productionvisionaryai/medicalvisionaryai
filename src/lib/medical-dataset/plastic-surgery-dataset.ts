@@ -1,3 +1,7 @@
+import plasticSurgeryData from './plastic-surgery-demo.json';
+
+const PLASTIC_SURGERY_DATASET = plasticSurgeryData;
+
 // Agrega estas funciones ANTES del cierre del archivo (después de cualquier otra función relacionada con el dataset)
 
 // Búsqueda semántica simple pero efectiva de casos relevantes

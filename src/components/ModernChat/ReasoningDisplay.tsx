@@ -4,12 +4,24 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Brain, GitBranch, Target, Shield, 
+  Brain, GitBranch, Target, Shield,
   AlertTriangle, CheckCircle, Clock,
   ChevronRight, ChevronDown, BarChart3,
   Cpu, Database, Layers
 } from 'lucide-react';
-import type { ChatMessage } from './ModernChat';
+
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  reasoningSteps?: string[];
+  metadata?: {
+    confidence?: number;
+    processingTime?: number;
+    model?: string;
+  };
+  dataSource?: string;
+}
 
 interface ReasoningDisplayProps {
   messages: ChatMessage[];
@@ -109,35 +121,32 @@ export default function ReasoningDisplay({
         <div className="flex border-b border-gray-100">
           <button
             onClick={() => setActiveTab('reasoning')}
-            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
-              activeTab === 'reasoning'
+            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'reasoning'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             <GitBranch className="w-4 h-4" />
             Pasos de Razonamiento
           </button>
-          
+
           <button
             onClick={() => setActiveTab('analysis')}
-            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
-              activeTab === 'analysis'
+            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'analysis'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             <BarChart3 className="w-4 h-4" />
             Análisis Técnico
           </button>
-          
+
           <button
             onClick={() => setActiveTab('dataset')}
-            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${
-              activeTab === 'dataset'
+            className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'dataset'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             <Database className="w-4 h-4" />
             Dataset Usado
@@ -171,7 +180,7 @@ export default function ReasoningDisplay({
                 {reasoningSteps.map((step, index) => {
                   const isExpanded = expandedSteps.has(index);
                   const stepNumber = index + 1;
-                  
+
                   return (
                     <motion.div
                       key={index}
@@ -210,7 +219,7 @@ export default function ReasoningDisplay({
                           )}
                         </div>
                       </button>
-                      
+
                       <AnimatePresence>
                         {isExpanded && (
                           <motion.div
@@ -223,7 +232,7 @@ export default function ReasoningDisplay({
                               <div className="text-gray-700 whitespace-pre-line">
                                 {step}
                               </div>
-                              
+
                               {/* Metadata del paso */}
                               <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4">
                                 <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -255,7 +264,7 @@ export default function ReasoningDisplay({
                   <h5 className="font-medium text-blue-900">Resumen del Proceso</h5>
                 </div>
                 <p className="text-sm text-blue-800">
-                  Este análisis médico estructurado demuestra cómo la IA aplica principios de razonamiento clínico, 
+                  Este análisis médico estructurado demuestra cómo la IA aplica principios de razonamiento clínico,
                   descomponiendo problemas complejos en pasos lógicos verificables.
                 </p>
               </div>
@@ -275,7 +284,7 @@ export default function ReasoningDisplay({
                   <BarChart3 className="w-4 h-4" />
                   Métricas del Análisis
                 </h4>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Complejidad */}
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
@@ -286,7 +295,7 @@ export default function ReasoningDisplay({
                       </span>
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
                         style={{ width: `${reasoningMetrics.complexity * 10}%` }}
                       />
@@ -308,8 +317,8 @@ export default function ReasoningDisplay({
                       </div>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {activeProcedure 
-                        ? 'Basado en procedimiento específico documentado' 
+                      {activeProcedure
+                        ? 'Basado en procedimiento específico documentado'
                         : 'Basado en principios médicos generales'}
                     </div>
                   </div>
@@ -323,11 +332,10 @@ export default function ReasoningDisplay({
                       </span>
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full ${
-                          reasoningMetrics.confidence > 0.9 ? 'bg-green-500' :
-                          reasoningMetrics.confidence > 0.7 ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
+                      <div
+                        className={`h-full rounded-full ${reasoningMetrics.confidence > 0.9 ? 'bg-green-500' :
+                            reasoningMetrics.confidence > 0.7 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
                         style={{ width: `${reasoningMetrics.confidence * 100}%` }}
                       />
                     </div>
@@ -357,13 +365,13 @@ export default function ReasoningDisplay({
                       Procedimiento Analizado: {activeProcedure.name}
                     </h5>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                       <span className="text-sm text-green-800">{activeProcedure.description}</span>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 mt-4">
                       <div>
                         <div className="text-xs text-green-700 font-medium mb-1">Categoría</div>
@@ -415,7 +423,7 @@ export default function ReasoningDisplay({
                   <Database className="w-4 h-4" />
                   Dataset Médico Utilizado
                 </h4>
-                
+
                 <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -426,7 +434,7 @@ export default function ReasoningDisplay({
                       Especializado
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="text-center p-3 bg-white rounded-lg border border-gray-100">
                       <div className="text-2xl font-bold text-blue-600">{datasetStats.cases}</div>
@@ -441,14 +449,14 @@ export default function ReasoningDisplay({
                       <div className="text-sm text-gray-600">Templates</div>
                     </div>
                   </div>
-                  
+
                   <div className="text-sm text-gray-700 space-y-3">
                     <p>
-                      Este dataset contiene <strong>casos médicos reales con razonamiento Chain-of-Thought</strong>, 
+                      Este dataset contiene <strong>casos médicos reales con razonamiento Chain-of-Thought</strong>,
                       mostrando el proceso de pensamiento paso a paso que siguen los profesionales médicos.
                     </p>
                     <p>
-                      Para este demo, hemos <strong>adaptado y filtrado los casos</strong> específicamente para 
+                      Para este demo, hemos <strong>adaptado y filtrado los casos</strong> específicamente para
                       cirugía plástica y estética, manteniendo la estructura de razonamiento médico original.
                     </p>
                   </div>
@@ -461,7 +469,7 @@ export default function ReasoningDisplay({
                   <GitBranch className="w-4 h-4" />
                   Ejemplo de Razonamiento del Dataset
                 </h5>
-                
+
                 <div className="space-y-4">
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <div className="text-xs font-medium text-blue-700 mb-1">Pregunta Médica Original</div>
@@ -469,7 +477,7 @@ export default function ReasoningDisplay({
                       "Evaluar riesgo de complicaciones en paciente con múltiples comorbilidades para procedimiento electivo"
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-green-50 rounded-lg">
                     <div className="text-xs font-medium text-green-700 mb-1">Proceso de Razonamiento (CoT)</div>
                     <div className="text-sm text-green-900 space-y-2">
@@ -479,7 +487,7 @@ export default function ReasoningDisplay({
                       <div>4. Planificar manejo intra y postoperatorio</div>
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-purple-50 rounded-lg">
                     <div className="text-xs font-medium text-purple-700 mb-1">Aplicación en Cirugía Plástica</div>
                     <div className="text-sm text-purple-900">

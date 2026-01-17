@@ -144,7 +144,7 @@ export default function ChatInterface({
       if (line.match(/^[#]{1,3}\s+.+/)) {
         const level = line.match(/^[#]+/)?.[0].length || 1;
         const text = line.replace(/^[#]+\s+/, '');
-        const Tag = `h${Math.min(3, level)}` as keyof JSX.IntrinsicElements;
+        const Tag = `h${Math.min(3, level)}` as keyof React.JSX.IntrinsicElements;
         return (
           <Tag 
             key={index} 
