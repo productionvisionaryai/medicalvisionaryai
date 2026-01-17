@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   console.log("HELENA: Mensajes recibidos:", messages);
 
   const result = streamText({
-    model: groq("llama3-70b-8192"),
+    model: groq("llama-3.3-70b-versatile"),
     messages: [
       { role: "system", content: "Eres Helena. Di 'HOLA'." },
       ...(messages || [])
