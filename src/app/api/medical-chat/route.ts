@@ -1,56 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getGroqMedicalResponse } from '@/lib/groq/groq-service';
+import { groq } from '@ai-sdk/groq';
+import { streamObject } from 'ai';
+import { z } from 'zod';
 
-export async function POST(request: NextRequest) {
-  try {
-    const { query } = await request.json();
-    
-    if (!query || typeof query !== 'string') {
-      return NextResponse.json(
-        { error: 'Consulta médica requerida' },
-        { status: 400 }
-      );
-    }
-    
-    // Validar longitud de la consulta
-    if (query.length > 1000) {
-      return NextResponse.json(
-        { error: 'La consulta es demasiado larga (máximo 1000 caracteres)' },
-        { status: 400 }
-      );
-    }
-    
-    console.log('📝 Consulta médica recibida:', query.substring(0, 100) + '...');
-    
-    // Llamar a Groq
-    const response = await getGroqMedicalResponse(query);
-    
-    console.log('✅ Respuesta generada, longitud razonamiento:', response.reasoning?.length || 0);
-    
-    // Aquí podrías guardar en la base de datos si quieres
-    // await saveConversationToDB(query, response);
-    
-    return NextResponse.json(response);
-  } catch (error: any) {
-    console.error('❌ API Error:', error.message);
-    
-    // Respuesta de fallback
-    return NextResponse.json(
-      { 
-        error: 'Error interno del servidor',
-        reasoning: "Error en el servicio de análisis médico. Detalle: " + (error.message || 'Desconocido'),
-        answer: "Por favor, intente nuevamente más tarde o use el modo de búsqueda en dataset."
-      },
-      { status: 500 }
-    );
-  }
-}
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
 
-// Opcional: Método GET para probar
-export async function GET() {
-  return NextResponse.json({
-    message: 'API Médica PlastAI funcionando',
-    status: 'operational',
-    timestamp: new Date().toISOString()
+export async function POST(req: Request) {
+  const { query } = await req.json();
+
+  const result = streamObject({
+    model: groq('llama-3.3-70b-versatile'),
+    schema: z.object({
+      reasoning: z.string().describe('Detailed step-by-step medical reasoning (Chain of Thought), analyzing symptoms, risk factors, and differentials.'),
+      answer: z.string().describe('Final clinical conclusion and recommendation.'),
+    }),
+    system: `You are a specialized medical assistant for plastic surgery and general medicine.
+Your task is to provide step-by-step medical reasoning (Chain of Thought) followed by a clinical answer.
+Key areas: plastic surgery, preoperative evaluations, postoperative complications, differential diagnosis.
+Use appropriate medical terminology but explain complex concepts clearly.`,
+    prompt: query,
   });
+
+  return result.toTextStreamResponse();
 }
