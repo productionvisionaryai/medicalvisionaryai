@@ -1,20 +1,17 @@
-// app/api/chat/route.ts - REEMPLAZA TODO CON ESTO
+// app/api/chat/route.ts - VERSIÓN CORREGIDA
 import { groq } from '@ai-sdk/groq';
 import { streamText } from 'ai';
 
-// Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    // Extrae el último mensaje del usuario
     const lastUserMessage = messages
       .filter((m: any) => m.role === 'user')
       .pop()?.content || '';
 
-    // Si no hay mensaje, devuelve saludo inicial
     if (!lastUserMessage.trim()) {
       return new Response(
         JSON.stringify({
@@ -70,9 +67,9 @@ FORMATO DE RESPUESTA:
 
 Proporciona una respuesta completa en el formato establecido.`,
 
-      // Configuración óptima para Groq
-      temperature: 0.4, // Balance entre creatividad y consistencia
-      maxTokens: 800,   // Suficiente para respuestas completas
+      // CORRECCIÓN: Cambia maxTokens a maxCompletionTokens
+      temperature: 0.4,
+      maxCompletionTokens: 800, // ← ¡CORRECCIÓN AQUÍ!
     });
 
     return result.toTextStreamResponse();
@@ -80,7 +77,6 @@ Proporciona una respuesta completa en el formato establecido.`,
   } catch (error) {
     console.error('Error en endpoint /api/chat:', error);
 
-    // Fallback elegante
     return new Response(
       JSON.stringify({
         error: false,
