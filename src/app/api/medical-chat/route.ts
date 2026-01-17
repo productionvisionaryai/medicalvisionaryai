@@ -1,18 +1,14 @@
 import { groq } from "@ai-sdk/groq";
-import { streamObject } from "ai";
-import { z } from "zod";
+import { generateText } from "ai";
 
 export async function POST(req: Request) {
   const { query } = await req.json();
 
-  const result = streamObject({
+  const { text } = await generateText({
     model: groq("llama-3.3-70b-versatile"),
-    schema: z.object({
-      reasoning: z.string(),
-      answer: z.string(),
-    }),
-    prompt: `Eres Helena, asistente médica. Responde en español. Pregunta: ${query}`,
+    system: "Eres Helena, asistente médica. Responde en español.",
+    prompt: `Analiza: "${query}"`,
   });
 
-  return result.toTextStreamResponse();
+  return Response.json({ reasoning: text, answer: text });
 }
