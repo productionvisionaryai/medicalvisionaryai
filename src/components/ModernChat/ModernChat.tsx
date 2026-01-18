@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, MessageSquare, Zap, Clock, CheckCircle, AlertCircle, Loader2, Database } from 'lucide-react';
-import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
 
 // DATASET LOCAL - SOLO PARA MODO BÚSQUEDA
@@ -44,11 +43,43 @@ function findRelevantCases(query: string): any[] {
   );
 }
 
-// Validation schema for the AI response
-const medicalResponseSchema = z.object({
-  reasoning: z.string(),
-  answer: z.string(),
-});
+// Función que muestra las respuestas formateadas
+const renderFormattedAnswer = (answer: string) => {
+  // Convertir encabezados Markdown a componentes React
+  const parts = answer.split(/(## .+)/g);
+
+  return (
+    <div className="space-y-4">
+      {parts.map((part, index) => {
+        if (part.startsWith('## ')) {
+          return (
+            <h3 key={index} className="text-lg font-semibold mt-4 mb-2">
+              {part.replace('## ', '')}
+            </h3>
+          );
+        }
+
+        // Convertir viñetas y listas numeradas
+        const lines = part.split('\n').filter(line => line.trim());
+        return (
+          <div key={index} className="space-y-1">
+            {lines.map((line, lineIndex) => {
+              if (line.startsWith('• ') || line.startsWith('1. ') || line.startsWith('2. ') || line.startsWith('3. ')) {
+                return (
+                  <div key={lineIndex} className="flex items-start">
+                    <span className="mr-2 text-blue-500">•</span>
+                    <span>{line.replace(/^[•1-9].\s*/, '')}</span>
+                  </div>
+                );
+              }
+              return <div key={lineIndex}>{line}</div>;
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 // Componente principal
 export default function ModernChat() {
@@ -56,25 +87,42 @@ export default function ModernChat() {
   const [results, setResults] = useState<any[]>([]);
   const [chatMode, setChatMode] = useState<'ai' | 'dataset'>('ai');
 
-  // Vercel AI SDK useObject hook
-  const {
-    object,
-    submit,
-    isLoading: isAiLoading,
-    error: aiError
-  } = useObject({
-    api: '/api/medical-chat',
-    schema: medicalResponseSchema,
-  });
+  // Custom AI hook state since we are not using useObject anymore for this endpoint
+  const [aiResponse, setAiResponse] = useState<{ reasoning?: string; answer?: string } | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<Error | null>(null);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!query.trim()) return;
 
     setResults([]);
+    setAiResponse(null);
+    setAiError(null);
 
     if (chatMode === 'ai') {
-      // Modo Groq AI via Vercel AI SDK
-      submit({ query });
+      // Modo Groq AI via endpoint simple
+      setIsAiLoading(true);
+      try {
+        const res = await fetch('/api/medical-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        setAiResponse(data);
+      } catch (err: any) {
+        setAiError(err);
+        console.error("Error fetching AI response:", err);
+      } finally {
+        setIsAiLoading(false);
+      }
     } else {
       // Modo dataset
       const found = findRelevantCases(query);
@@ -140,7 +188,7 @@ export default function ModernChat() {
 
             <div className="mt-4 text-sm text-gray-600">
               {chatMode === 'ai' ? (
-                <p>🔄 <strong>Modo IA:</strong> Consultas procesadas por Groq con razonamiento médico paso a paso (Streaming).</p>
+                <p>🔄 <strong>Modo IA:</strong> Consultas procesadas por Groq con razonamiento médico paso a paso.</p>
               ) : (
                 <p>📊 <strong>Modo Dataset:</strong> Búsqueda en casos médicos predefinidos (7 casos demo).</p>
               )}
@@ -198,7 +246,7 @@ export default function ModernChat() {
                     <button
                       onClick={() => {
                         setQuery("Paciente con fiebre post-liposucción, ¿qué debo evaluar?");
-                        setTimeout(() => handleSearch(), 100); // Hack removed if possible, but keeping for direct click action
+                        // setTimeout(() => handleSearch(), 100); 
                       }}
                       className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full transition-colors"
                     >
@@ -207,10 +255,6 @@ export default function ModernChat() {
                     <button
                       onClick={() => {
                         setQuery("Evaluación preoperatoria para rinoplastia en paciente con desviación septal");
-                        setTimeout(() => { /* triggers on next render if we fixed logic, but simplify for now */
-                          // We need to set query then submit. React batching might require useEffect or similar but let's assume user clicks button
-                        });
-                        // Just setting query for UX
                       }}
                       className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full transition-colors"
                     >
@@ -237,7 +281,7 @@ export default function ModernChat() {
             </div>
 
             {/* Estado de carga */}
-            {isAiLoading && !object?.reasoning && (
+            {isAiLoading && (
               <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
                 <div className="flex items-center justify-center gap-3">
                   <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -261,26 +305,28 @@ export default function ModernChat() {
             )}
 
             {/* Respuesta de IA */}
-            {(object?.reasoning || object?.answer) && (
+            {aiResponse && (
               <div className="mt-6 border-t pt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Zap className="w-4 h-4 text-green-600" />
                   <h4 className="font-medium text-gray-900">
-                    Respuesta Médica Generada {isAiLoading && '(Generando...)'}
+                    Respuesta Médica Generada
                   </h4>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Proceso de Razonamiento:</h5>
-                    <div className="bg-white p-4 rounded border border-gray-200">
-                      <p className="text-sm text-gray-600 whitespace-pre-line">
-                        {object.reasoning || <span className="animate-pulse">Analizando caso clínico...</span>}
-                      </p>
+                  {aiResponse.reasoning && (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">Proceso de Razonamiento:</h5>
+                      <div className="bg-white p-4 rounded border border-gray-200">
+                        <p className="text-sm text-gray-600 whitespace-pre-line">
+                          {aiResponse.reasoning}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {object.answer && (
+                  {aiResponse.answer && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -288,7 +334,7 @@ export default function ModernChat() {
                     >
                       <h5 className="text-sm font-medium text-gray-700 mb-2">Conclusión Clínica:</h5>
                       <div className="bg-white p-4 rounded border border-gray-200">
-                        <p className="text-gray-900">{object.answer}</p>
+                        {renderFormattedAnswer(aiResponse.answer)}
                       </div>
                     </motion.div>
                   )}
