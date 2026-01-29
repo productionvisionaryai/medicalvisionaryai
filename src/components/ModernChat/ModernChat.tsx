@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
+import type { UIMessage, UIMessageChunk } from 'ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Send, Bot, User, Activity, Sparkles, 
@@ -10,16 +11,22 @@ import {
 } from 'lucide-react';
 import { getCalApi } from "@calcom/embed-react";
 
-import MedicalAlert from './MedicalAlert';
-import RecoveryActions from './RecoveryActions';
-import ConsentForm from './ConsentForm';
+import MedicalAlert from '../ui/medical-alert';
+import RecoveryActions from '../ui/recovery-actions';
+import ConsentForm from '../compliance/ConsentForm';
 
 interface ModernChatProps {
     patientId: string;
 }
 
+// Extend UIMessage to include content property
+interface MessageWithContent extends UIMessage {
+    content: string;
+}
+
 export default function ModernChat({ patientId }: ModernChatProps) {
     const [hasConsent, setHasConsent] = useState<boolean>(false);
+    const [input, setInput] = useState<string>('');
 
     // 1. Inicialización de Cal.com (Superioridad en Agendamiento)
     useEffect(() => {
@@ -40,18 +47,63 @@ export default function ModernChat({ patientId }: ModernChatProps) {
         if (consent === 'true') setHasConsent(true);
     }, []);
 
-    // 3. Configuración del Hook de AI
-    const { messages, input, handleInputChange, handleSubmit, reload, isLoading, error } = useChat({
-        api: '/api/medical-chat',
-        body: { patientId },
+    // 3. Configuración del Hook de AI (API v3.x)
+    const chatHelpers = useChat({
+        transport: {
+            sendMessages: async ({ trigger, chatId, messageId, messages, abortSignal }) => {
+                const response = await fetch('/api/medical-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        messages, 
+                        patientId,
+                        trigger,
+                        chatId,
+                        messageId
+                    }),
+                    signal: abortSignal,
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                
+                // The SDK expects a ReadableStream of UIMessageChunk
+                // We cast through unknown to satisfy the type checker
+                return response.body as unknown as ReadableStream<UIMessageChunk>;
+            },
+            reconnectToStream: async () => null,
+        },
         onError: (err) => {
             console.error("Nexus Audit - Chat Error:", err);
         }
     });
 
+    const { messages, sendMessage, regenerate, status, error } = chatHelpers;
+
     const handleConsentComplete = () => {
         localStorage.setItem('helena_medical_consent', 'true');
         setHasConsent(true);
+    };
+
+    // Input handlers
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInput(e.target.value);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim() || status === 'streaming' || status === 'submitted') return;
+        
+        await sendMessage({ text: input });
+        setInput('');
+    };
+
+    const isLoading = status === 'streaming' || status === 'submitted';
+
+    // Reload function (regenerate last assistant message)
+    const reload = () => {
+        regenerate();
     };
 
     // 4. Analizador de Contexto Nexus (Acciones Proactivas)
@@ -97,7 +149,7 @@ export default function ModernChat({ patientId }: ModernChatProps) {
                                     { 
                                         label: 'Llamar a Emergencias', 
                                         variant: 'primary', 
-                                        icon: <Phone size={16} />,
+                                        icon: <Phone size={16} />, 
                                         onClick: () => window.open('tel:911')
                                     },
                                     { 
@@ -141,13 +193,13 @@ export default function ModernChat({ patientId }: ModernChatProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-3 text-slate-400">
-                    <ShieldCheck size={18} className="text-blue-500 hover:text-blue-600 cursor-help" title="Cifrado HIPAA Activo" />
-                    <HeartPulse size={18} className="text-rose-400" title="Integración Vital" />
+                    <ShieldCheck size={18} className="text-blue-500 hover:text-blue-600 cursor-help" />
+                    <HeartPulse size={18} className="text-rose-400" />
                 </div>
             </div>
 
             {/* Zona de Mensajes */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-white to-slate-50/20">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-linear-to-b from-white to-slate-50/20">
                 <AnimatePresence mode='popLayout'>
                     {messages.length === 0 && !error && (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
@@ -176,32 +228,35 @@ export default function ModernChat({ patientId }: ModernChatProps) {
                         </motion.div>
                     )}
 
-                    {messages.map((m) => (
-                        <motion.div
-                            key={m.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div className={`flex gap-3 max-w-[88%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
-                                    m.role === 'user' ? 'bg-slate-100 text-slate-500' : 'bg-blue-600 text-white'
-                                }`}>
-                                    {m.role === 'user' ? <User size={14} /> : <Bot size={14} />}
-                                </div>
-                                <div className="space-y-2">
-                                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                                        m.role === 'user' 
-                                            ? 'bg-slate-900 text-white rounded-tr-none shadow-lg' 
-                                            : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none shadow-sm'
+                    {messages.map((m) => {
+                        const message = m as MessageWithContent;
+                        return (
+                            <motion.div
+                                key={m.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div className={`flex gap-3 max-w-[88%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm ${
+                                        m.role === 'user' ? 'bg-slate-100 text-slate-500' : 'bg-blue-600 text-white'
                                     }`}>
-                                        {m.content}
+                                        {m.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                                     </div>
-                                    {m.role === 'assistant' && getContextualActions(m.content)}
+                                    <div className="space-y-2">
+                                        <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
+                                            m.role === 'user' 
+                                                ? 'bg-slate-900 text-white rounded-tr-none shadow-lg' 
+                                                : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none shadow-sm'
+                                        }`}>
+                                            {message.content}
+                                        </div>
+                                        {m.role === 'assistant' && getContextualActions(message.content)}
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
 
                     {isLoading && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-center ml-2">
