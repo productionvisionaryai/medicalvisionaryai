@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums para consistencia de datos
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MetricType {
+  HEART_RATE
+  BLOOD_PRESSURE_SYSTOLIC
+  BLOOD_PRESSURE_DIASTOLIC
+  BLOOD_OXYGEN
+  GLUCOSE
+  // --- Nuevos campos para Telemetría avanzada y Buceo ---
+  STEPS
+  STRESS_LEVEL
+  RESPIRATION_RATE
+  VO2_MAX
+  DEPTH              // Para computadoras de buceo
+  WATER_TEMPERATURE  // Vital para casos de hipotermia o buceo
+  DECO_STOP          // Paradas de descompresión
+  ALTITUDE           // Para medicina de montaña
+  GPS_COORDINATES    // Para rescate o geofencing médico
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+  EMERGENCY
+}
+
+// ======================
+// MODELO 1: PACIENTE
+// ======================
+model Patient {
+  id                String       @id @default(cuid())
+  garminId         String?  @unique // ID único que nos manda Garmin vía Webhook
+  name              String
+  email             String       @unique
+  phone             String?
+  age               Int
+  gender            String
+  bloodType         String?
+  allergies         String[]
+  medications       String[]
+  medicalHistory    String?
+  isActive          Boolean      @default(true)
+  timezone          String       @default("UTC")
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  chatSessions      ChatSession[]
+  triageAssessments TriageAssessment[]
+  appointments      Appointment[]
+  metrics           NormalizedMetric[]
+  alerts            MedicalAlert[]
+
+  @@map("patients")
+}
+
+// ======================
+// MODELO 2: SESIÓN DE CHAT (Helena)
+// ======================
+model ChatSession {
+  id            String       @id @default(cuid())
+  patientId     String?
+  status        String       @default("ACTIVE") // ACTIVE, ARCHIVED, EMERGENCY
+  
+  startedAt     DateTime     @default(now())
+  lastMessageAt DateTime     @default(now())
+
+  patient       Patient?     @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  messages      ChatMessage[]
+  triage        TriageAssessment?
+
+  @@map("chat_sessions")
+}
+
+// ======================
+// MODELO 3: MENSAJES (Con soporte para Reasoning)
+// ======================
+model ChatMessage {
+  id            String       @id @default(cuid())
+  sessionId     String
+  role          MessageRole  @default(USER)
+  content       String       @db.Text
+  
+  // Aquí guardamos el "pensamiento" de la IA de tus Types
+  reasoning     String?      @db.Text 
+  
+  tokensUsed    Int?
+  modelUsed     String?
+  createdAt     DateTime     @default(now())
+
+  session       ChatSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}
+
+// ======================
+// MODELO 4: TRIAGE (Análisis Clínico)
+// ======================
+model TriageAssessment {
+  id                String       @id @default(cuid())
+  sessionId         String?      @unique
+  patientId         String?
+  
+  urgency           UrgencyLevel @default(MEDIUM)
+  symptoms          String       @db.Text
+  recommendations   String       @db.Text
+  
+  // Campos técnicos para Helena
+  redFlags          String[]
+  suggestedSpecialty String?
+  
+  createdAt         DateTime     @default(now())
+
+  session           ChatSession? @relation(fields: [sessionId], references: [id])
+  patient           Patient?     @relation(fields: [patientId], references: [id])
+
+  @@map("triage_assessments")
+}
+
+// ======================
+// MODELO 5: MÉTRICAS BIOMÉTRICAS (Para Garmin/Wearables)
+// ======================
+model NormalizedMetric {
+  id          String     @id @default(cuid())
+  patientId   String
+  type        MetricType
+  value       Float
+  unit        String
+  timestamp   DateTime
+  source      String     @default("MANUAL") 
+  
+  // Campo CRÍTICO: Metadata JSON
+  // Aquí guardaremos los detalles que no caben en un simple número
+  // Ej: Para buceo: {"gas_mix": "Nitrox", "surface_interval": 120}
+  // Ej: Para GPS: {"lat": 19.432, "lng": -99.133, "accuracy": 5}
+  metadata    Json?      
+
+  patient     Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, type, timestamp])
+  @@map("normalized_metrics")
+}
+
+// ======================
+// MODELO 8: ALERTAS MÉDICAS
+// ======================
+model MedicalAlert {
+  id          String        @id @default(cuid())
+  patientId   String
+  type        MetricType
+  severity    AlertSeverity @default(WARNING)
+  message     String
+  isResolved  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  patient     Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, severity])
+  @@map("medical_alerts")
+}
+
+// ======================
+// MODELO 6: CITAS MÉDICAS
+// ======================
+model Appointment {
+  id          String   @id @default(cuid())
+  patientId   String
+  date        DateTime
+  reason      String
+  status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+// ======================
+// MODELO 7: DOCUMENTOS MÉDICOS
+// ======================
+model MedicalDocument {
+  id          String   @id @default(cuid())
+  patientId   String?
+  type        String   // "LAB_RESULT", "IMAGING", "PRESCRIPTION", etc.
+  title       String
+  content     String   @db.Text
+  fileUrl     String?
+  uploadedAt  DateTime @default(now())
+  
+  patient     Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
+  @@map("medical_documents")
+}

@@ -1,409 +1,67 @@
-'use client';
+import ModernChat from '@/components/chat/ModernChat';
+import { ShieldCheck, activity, Zap } from 'lucide-react';
 
-import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import {
-  ArrowDown, Sparkles, Cpu, Database, Shield, Zap,
-  Brain, ChevronRight, BarChart3, Target, Clock,
-  Heart, Moon, Activity
-} from 'lucide-react';
-import MedicalHero from '@/components/MedicalHero';
-import ModernChat from '@/components/ModernChat/ModernChat';
-import TechComparison from '@/components/TechComparison/TechComparison';
-import ConversionCTA from '@/components/ConversionCTA/ConversionCTA';
-
-// Componente de transición elegante
-function FloatingIndicator() {
-  const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const y = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
+export default function Page() {
+  // En producción, este ID vendría de la sesión del médico o del expediente del paciente
+  const DEMO_PATIENT_ID = "PAT-7742-XP";
 
   return (
-    <motion.div
-      style={{ opacity, y }}
-      className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-20"
-    >
-      <div className="flex flex-col items-center">
-        <span className="text-xs text-gray-500 mb-2 tracking-widest uppercase">
-          Explorar Demo
-        </span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <ArrowDown className="w-5 h-5 text-gray-400" />
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-}
-
-// Sección de introducción al demo
-function DemoIntro() {
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      className="py-20 px-4 bg-gradient-to-b from-white to-gray-50"
-    >
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full mb-4 border border-blue-100">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700 tracking-widest uppercase">
-              Demo Helena AI
+    <main className="min-h-screen bg-[#FAFAFA] selection:bg-blue-50">
+      {/* Header de Superioridad Tecnológica */}
+      <nav className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Zap className="text-white w-5 h-5 fill-current" />
+            </div>
+            <span className="font-black text-slate-900 tracking-tighter text-xl">
+              HELENA<span className="text-blue-600">AI</span>
             </span>
           </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-green-50 border border-green-100 rounded-full">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-bold text-green-700 uppercase tracking-wider">LPU Engine Online</span>
+            </div>
+            <ShieldCheck className="text-slate-400 w-5 h-5" />
+          </div>
+        </div>
+      </nav>
 
-          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6">
-            <span className="block">Asistente quirúrgico</span>
-            <span className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Helena AI
-            </span>
-          </h2>
-
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Esta demostración presenta <strong className="text-gray-900">Helena AI</strong>, desarrollado por{' '}
-            <span className="text-gray-500">Visionary AI</span>. Procesa casos médicos reales con
-            razonamiento estructurado, ofreciendo análisis clínico especializado en cirugía plástica.
+      <div className="max-w-5xl mx-auto px-4 pt-12 pb-20">
+        <div className="text-center mb-10 space-y-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mx-auto max-w-2xl">
+            Inteligencia Clínica de <span className="text-blue-600 italic">Alta Especialidad</span>
+          </h1>
+          <p className="text-slate-500 text-lg max-w-xl mx-auto font-medium">
+            Análisis de biométricos en tiempo real y asistencia diagnóstica de nivel avanzado.
           </p>
         </div>
 
-        {/* Características técnicas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow"
-          >
-            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
-              <Database className="w-6 h-6 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Dataset Médico Real
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Integramos <code className="bg-gray-100 px-2 py-1 rounded text-sm">medical-o1-reasoning-SFT</code> con
-              casos médicos reales adaptados a cirugía plástica.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                <span>7+ casos médicos procesados</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                <span>Razonamiento Chain-of-Thought</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                <span>Adaptación específica a cirugía plástica</span>
-              </li>
-            </ul>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow"
-          >
-            <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center mb-6">
-              <Brain className="w-6 h-6 text-purple-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Razonamiento Transparente
-            </h3>
-            <p className="text-gray-600 mb-4">
-              No solo respuestas: mostramos el <strong>proceso de pensamiento médico</strong> paso a paso, como lo haría un especialista.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                <span>Análisis paso a paso verificable</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                <span>Consideraciones diferenciales</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                <span>Evaluación riesgo-beneficio</span>
-              </li>
-            </ul>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow"
-          >
-            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-6">
-              <Zap className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Rendimiento de Vanguardia
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Respuestas en <strong>menos de 1 segundo</strong> frente a los 2-5 segundos de soluciones WordPress tradicionales.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                <span>Respuestas en 800-1000ms</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                <span>Interfaz tipo app nativa</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                <span>Experiencia mobile-first</span>
-              </li>
-            </ul>
-          </motion.div>
+        {/* Contenedor del Chat - Elevación Visual */}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+          <div className="relative">
+             <ModernChat patientId={DEMO_PATIENT_ID} />
+          </div>
         </div>
 
-        {/* CTA para interactuar con el demo */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
-          <div className="inline-flex items-center gap-3 text-sm text-gray-600 mb-6">
-            <div className="flex items-center gap-1">
-              <Target className="w-4 h-4 text-blue-500" />
-              <span>Pruebe el demo interactivo</span>
-            </div>
-            <ChevronRight className="w-4 h-4" />
-            <div className="flex items-center gap-1">
-              <BarChart3 className="w-4 h-4 text-purple-500" />
-              <span>Analice el razonamiento médico</span>
-            </div>
-            <ChevronRight className="w-4 h-4" />
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4 text-green-500" />
-              <span>Compare tiempos de respuesta</span>
-            </div>
+        {/* Footer Institucional */}
+        <div className="mt-12 flex flex-col items-center gap-6">
+          <div className="flex flex-wrap justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+            {/* Aquí irían logos de partners o certificaciones como HIPAA, Cloudflare, etc. */}
+            <span className="text-xs font-bold tracking-widest text-slate-900">SECURE DATA BASE</span>
+            <span className="text-xs font-bold tracking-widest text-slate-900">GROQ LPU™ READY</span>
+            <span className="text-xs font-bold tracking-widest text-slate-900">CAL.COM INTEGRATED</span>
           </div>
-
-          <div className="text-2xl font-light text-gray-900 mb-8">
-            Desplácese hacia abajo para <span className="font-semibold">interactuar con la demo</span>
-          </div>
-
-          <motion.div
-            animate={{ y: [0, 5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="inline-flex items-center gap-2 text-gray-500"
-          >
-            <ArrowDown className="w-5 h-5" />
-            <span className="text-sm">Continuar</span>
-          </motion.div>
-        </motion.div>
+          
+          <footer className="text-center">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              Visionary AI Labs © 2026 • Advanced Healthcare Division
+            </p>
+          </footer>
+        </div>
       </div>
-    </motion.section>
-  );
-}
-
-export default function Home() {
-  const [isDemoLoaded, setIsDemoLoaded] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsDemoLoaded(true);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <main className="min-h-screen bg-white">
-      {/* Floating indicator */}
-      <FloatingIndicator />
-
-      {/* 1. Hero Section con video - Impacto visual inmediato */}
-      <MedicalHero />
-
-      {/* 2. Introducción al demo técnico */}
-      <DemoIntro />
-
-      {/* 3. Demo principal: ModernChat con dataset médico */}
-      <section id="demo-chat" className="scroll-mt-20">
-        {isDemoLoaded ? (
-          <ModernChat />
-        ) : (
-          <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
-              <p className="text-gray-600">Cargando Helena AI - Dataset especializado...</p>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* 4. Comparación técnica: WordPress vs Nuestra Solución */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-        <TechComparison />
-      </section>
-
-      {/* 4.5. Nueva Sección de Wearables */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="flex-1 space-y-6">
-              <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
-                <Zap className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">
-                  NUEVO: INTEGRACIÓN WEARABLES
-                </span>
-              </div>
-
-              <h2 className="text-4xl font-light text-gray-900">
-                Monitoreo Post-Operatorio <br />
-                <span className="font-semibold text-blue-600">en Tiempo Real</span>
-              </h2>
-
-              <p className="text-lg text-gray-600">
-                Conecte dispositivos como <strong>Apple Watch</strong>, <strong>Fitbit</strong> y <strong>Oura Ring</strong> para un seguimiento continuo de la recuperación de sus pacientes.
-              </p>
-
-              <ul className="space-y-3">
-                {[
-                  'Detección temprana de complicaciones',
-                  'Seguimiento de actividad y sueño',
-                  'Alertas automáticas al cirujano'
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-700">
-                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                      <Target className="w-3 h-3 text-green-600" />
-                    </div>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="pt-4">
-                <a
-                  href="/wearables"
-                  className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors"
-                >
-                  <span className="font-medium">Ver Integración</span>
-                  <ChevronRight className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-
-            <div className="flex-1 relative">
-              <div className="relative z-10 bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
-                      <Heart className="w-6 h-6 text-red-500" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">Signos Vitales</div>
-                      <div className="text-xs text-green-500 flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        En vivo
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900">72 <span className="text-sm text-gray-500 font-normal">bpm</span></span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[75%]"></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Oura Ring</span>
-                    <span>Actualizado hace 2m</span>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-gray-100 flex gap-4">
-                  <div className="flex-1 text-center p-3 bg-gray-50 rounded-xl">
-                    <Moon className="w-5 h-5 text-purple-500 mx-auto mb-2" />
-                    <div className="text-sm font-semibold">8h 12m</div>
-                    <div className="text-xs text-gray-500">Sueño</div>
-                  </div>
-                  <div className="flex-1 text-center p-3 bg-gray-50 rounded-xl">
-                    <Activity className="w-5 h-5 text-green-500 mx-auto mb-2" />
-                    <div className="text-sm font-semibold">4.2 km</div>
-                    <div className="text-xs text-gray-500">Actividad</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Decorative elements */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-r from-blue-100/30 to-purple-100/30 blur-3xl -z-10 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Llamado a la acción para cirujanos */}
-      <section className="py-20 bg-white">
-        <ConversionCTA />
-      </section>
-
-      {/* Footer minimalista */}
-      <footer className="py-12 px-4 border-t border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                  <Brain className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-lg font-semibold text-gray-900">Helena AI</span>
-                  <span className="text-xs text-gray-400 font-normal">
-                    un desarrollo de <span className="text-gray-500">Visionary AI</span>
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-500 max-w-md">
-                Asistente de IA especializado para cirujanos plásticos.
-                Demostración técnica con dataset médico real y razonamiento estructurado.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">7+</div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest">Casos demo</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">100%</div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest">Especializado</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{'<1s'}</div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest">Respuesta</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-gray-100 text-center">
-            <p className="text-xs text-gray-400">
-              🧠 <strong>Helena AI Demo:</strong> Asistente quirúrgico inteligente desarrollado por{' '}
-              <span className="text-gray-500">Visionary AI</span>. Utiliza el dataset médico{' '}
-              <code className="text-gray-500">medical-o1-reasoning-SFT</code> adaptado para cirugía plástica.
-            </p>
-            <p className="text-xs text-gray-400 mt-2">
-              Demostración técnica avanzada. Contacto profesional: +52-56 16 73 74 67
-            </p>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

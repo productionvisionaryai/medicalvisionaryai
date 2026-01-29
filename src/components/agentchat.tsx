@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, User, ShieldCheck } from 'lucide-react';
+import { Send, ShieldCheck } from 'lucide-react';
 import { ELENA_PROMPT } from '@/lib/agent-config';
 
 export default function AgentChat() {
@@ -50,7 +50,7 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 w-[350px] z-50 flex flex-col shadow-2xl rounded-3xl overflow-hidden border border-slate-100 bg-white/95 backdrop-blur-md">
+    <div className="fixed bottom-6 right-6 w-87.5 z-50 flex flex-col shadow-2xl rounded-3xl overflow-hidden border border-slate-100 bg-white/95 backdrop-blur-md">
       {/* Header: Profesionalismo y Ética */}
       <div className="bg-slate-900 p-5 text-white flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -65,7 +65,7 @@ export default function AgentChat() {
       </div>
 
       {/* Chat Body: Fase de Escucha */}
-      <div ref={scrollRef} className="h-[400px] p-5 overflow-y-auto space-y-4 bg-gradient-to-b from-slate-50/50 to-white">
+      <div ref={scrollRef} className="h-100 p-5 overflow-y-auto space-y-4 bg-linear-to-b from-slate-50/50 to-white">
         <AnimatePresence>
           {messages.map((msg, i) => (
             <motion.div

@@ -1,10 +1,11 @@
 'use client'
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { config } from '@/lib/config';
 
 export default function WhatsAppFab() {
   // Número de la clínica o enfermera de guardia
-  const phoneNumber = "+525616737467";
+  const phoneNumber = config.contact.whatsapp;
   const message = "Hola, necesito asistencia médica inmediata respecto a mi procedimiento.";
 
   const handleClick = () => {
