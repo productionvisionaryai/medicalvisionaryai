@@ -1,12 +1,12 @@
-import ModernChat from '@/components/chat/ModernChat';
-import { ShieldCheck, activity, Zap } from 'lucide-react';
+import ModernChat from '@/components/ModernChat/ModernChat';
+import { ShieldCheck, Activity, Zap } from 'lucide-react';
 
 export default function Page() {
   // En producción, este ID vendría de la sesión del médico o del expediente del paciente
   const DEMO_PATIENT_ID = "PAT-7742-XP";
 
   return (
-    <main className="min-h-screen bg-[#FAFAFA] selection:bg-blue-50">
+    <main className="min-h-screen bg-clinical-bg selection:bg-blue-50">
       {/* Header de Superioridad Tecnológica */}
       <nav className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -40,7 +40,7 @@ export default function Page() {
 
         {/* Contenedor del Chat - Elevación Visual */}
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+          <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-indigo-600 rounded-4xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
           <div className="relative">
              <ModernChat patientId={DEMO_PATIENT_ID} />
           </div>

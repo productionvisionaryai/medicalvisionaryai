@@ -1,6 +1,6 @@
 // src/app/api/webhooks/garmin/route.ts
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/database/prisma';
+import { db } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
@@ -13,13 +13,13 @@ export async function POST(req: Request) {
         const userId = entry.userId; // El ID de Garmin que debemos vincular al PatientId
         
         // Buscamos al paciente en nuestra DB que tenga este ID de Garmin
-        const patient = await prisma.patient.findFirst({
+        const patient = await db.patient.findFirst({
           where: { medicalHistory: { contains: userId } } // O donde guardes su Garmin ID
         });
 
         if (patient) {
           // Guardamos la Frecuencia Cardíaca Promedio como métrica normalizada
-          await prisma.normalizedMetric.create({
+          await db.normalizedMetric.create({
             data: {
               patientId: patient.id,
               type: 'HEART_RATE',
